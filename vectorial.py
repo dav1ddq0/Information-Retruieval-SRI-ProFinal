@@ -1,7 +1,7 @@
 from typing import Dict,List
 import spacy
 import os
-
+import math
 from nltk.stem.snowball import SnowballStemmer
 
 
@@ -10,6 +10,8 @@ stemmer = SnowballStemmer(language='english')
 
 nlp =  spacy.load('en_core_web_md')
 
+# termino de suaviado
+a = 0.5
 
 tf = lambda freqij, maxfreqlj  : freqij/maxfreqlj
 
@@ -43,8 +45,55 @@ def freqtable(documents: Dict[str, List[str]]):
             freqtable[doc] = freq(tokens)
     return freqtable
 
-def tftable(documents: Dict[str, List[str]]):...
+def tftable(documents: Dict[str, List[str]]):
+    tftable = {}
+    freqt = freqtable(documents)
+
+    for doc, tokens in documents.items():
+        for token in tokens:
+            tftable[doc, token] = tf(freqt[doc][token], maxfreq(freqt[doc]))
     
+    return tftable
+
+def ntable(documents: Dict[str, List[str]]):
+    ntable = {}
+    for doc, tokens in documents.items():
+        visited = []
+        for token in tokens:
+            
+            if token not in visited:
+                visited.append(token)
+                if token in ntable.keys():
+                    ntable[token]+=1
+                   
+                else:
+                    ntable[token] = 1
+
+    return ntable
+
+def idftable(documents: Dict[str, List[str]]):
+    ntab = ntable(documents)
+    N = len(documents)
+    idftable = {}
+
+    for doc, tokens in documents.items():
+        for token in tokens:
+            if token not in idftable.keys():
+                idftable[token] = math.log(N/ntab[token])
+    
+    return idftable
+
+# tf x idf
+def weightTable(documents: Dict[str, List[str]]):
+    tf = tftable(documents)
+    idf = idftable(documents)
+    wij = {}
+    for doc, tokens in documents.items():
+        for token in tokens:
+            if (doc, token) not in wij.keys():
+                wij[doc, token] = tf[doc, token]*idf[token]
+
+    return wij      
 
 
 
@@ -66,12 +115,17 @@ def preprocessing(path):
            
     return processed_docs
 
-a = preprocessing('./test_texts')
-b = freq(a['lordrings.txt'])
-c = maxfreq(b)
-d = freqtable(a)
-print(a)
-print(b)
-print(c)
-print(d)
-
+a = preprocessing('./test_texts/2')
+# b = freq(a['lordrings.txt'])
+# c = maxfreq(b)
+# d = freqtable(a)
+n = ntable(a)
+tf = tftable(a)
+idf = idftable(a)
+# w = weightTable(a)
+# print(a)
+# print(b)
+# print(c)
+# print(d)
+print(idf)
+print(n)
