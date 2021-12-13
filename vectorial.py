@@ -45,6 +45,30 @@ def freqtable(documents: Dict[str, List[str]]):
             freqtable[doc] = freq(tokens)
     return freqtable
 
+def querytf(query: List[str]):
+    querytf = {}
+    maxfreq = 0
+    freq = {}
+
+    for token in query:
+        if token not in freq.keys():
+            freq[token] = 1
+        else:
+            freq[token] +=1
+    
+    for _, wfreq in freq.items():
+        if wfreq > maxfreq:
+            maxfreq = wfreq
+
+   
+
+    for token in query:
+        querytf[token] = tf(freq[token], maxfreq)
+
+    return querytf
+
+
+
 def tftable(documents: Dict[str, List[str]]):
     tftable = {}
     freqt = freqtable(documents)
@@ -95,7 +119,10 @@ def weightTable(documents: Dict[str, List[str]]):
 
     return wij      
 
+def weightQuery(query: List[str]):
 
+    for token in query:
+        
 
 def preprocessing(path):
     
@@ -115,7 +142,18 @@ def preprocessing(path):
            
     return processed_docs
 
-a = preprocessing('./test_texts/2')
+
+def process_query(query: str):
+    #procesado del texto (tokenization,stopwords elimination y stemming)
+    tokens=nlp(query)        
+    tokens=[token for token in tokens if not token.is_stop and not token.is_punct and not token.is_space]
+    tokens=[stemmer.stem(token.text) for token in tokens]
+    
+    return tokens
+
+
+
+a = preprocessing('./test_texts')
 # b = freq(a['lordrings.txt'])
 # c = maxfreq(b)
 # d = freqtable(a)
