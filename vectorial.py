@@ -119,9 +119,22 @@ def weightTable(documents: Dict[str, List[str]]):
 
     return wij      
 
-def weightQuery(query: List[str]):
+def weightQuery(query: List[str], documents):
+    weight = {}
+    tf = querytf(query)
+    
+    
 
-    for token in query:
+    for t in query:
+        N = len(documents) + 1
+        ni = 1
+        for _, tokens in documents.items():
+            if t in tokens:
+                ni += 1
+        weight[t]= (0.5 +0.5*(tf[t])) * math.log(N/ni)
+    
+    return weight
+
         
 
 def preprocessing(path):
@@ -153,17 +166,19 @@ def process_query(query: str):
 
 
 
-a = preprocessing('./test_texts')
+docs = preprocessing('./test_texts')
 # b = freq(a['lordrings.txt'])
 # c = maxfreq(b)
 # d = freqtable(a)
-n = ntable(a)
-tf = tftable(a)
-idf = idftable(a)
+# n = ntable(docs)
+# tf = tftable(docs)
+# idf = idftable(docs)
 # w = weightTable(a)
 # print(a)
 # print(b)
 # print(c)
 # print(d)
-print(idf)
-print(n)
+w = weightQuery(process_query("Hello darkness to my friend"), docs)
+print(w)
+# print(idf)
+# print(n)
