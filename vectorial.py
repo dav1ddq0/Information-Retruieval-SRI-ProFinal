@@ -1,8 +1,28 @@
 from typing import Dict,List
+from numpy import bool8, number, sqrt
 import spacy
 import os
 import math
+
 from nltk.stem.snowball import SnowballStemmer
+
+
+class Token:
+    
+    def __init__(self, word: str, freq: int) -> None:
+        self.word = word
+        self.freq = freq
+
+    def __str__(self) -> str:
+        return f"Token(word = {self.word}, freq = {self.freq})"
+    
+    def __ge__(self, other: 'Token'):
+        return self.freq >= other.freq
+
+    def __gt__(self, other: 'Token'):
+        return self.freq > other.freq
+
+
 
 
 stemmer = SnowballStemmer(language='english')
@@ -69,7 +89,7 @@ def querytf(query: List[str]):
 
 
 
-def tftable(documents: Dict[str, List[str]]):
+def tftable(documents: Dict[str, List[Token]]):
     tftable = {}
     freqt = freqtable(documents)
 
@@ -79,7 +99,7 @@ def tftable(documents: Dict[str, List[str]]):
     
     return tftable
 
-def ntable(documents: Dict[str, List[str]]):
+def ni_table(documents: Dict[str, List[Token]]):
     ntable = {}
     for doc, tokens in documents.items():
         visited = []
@@ -119,11 +139,22 @@ def weightTable(documents: Dict[str, List[str]]):
 
     return wij      
 
+def getTokens(words: List[str]):
+    tokens: List['Token'] = []
+    dic = {}
+    
+    for w in words:
+        if w not in dic.keys():
+            dic[w] = words.count(w)
+    
+    for w,o in dic.items():
+        tokens.append(Token(word = w, freq = o))
+    
+    return tokens
+
 def weightQuery(query: List[str], documents):
     weight = {}
     tf = querytf(query)
-    
-    
 
     for t in query:
         N = len(documents) + 1
@@ -152,8 +183,13 @@ def preprocessing(path):
             processed_docs[doc]=tokens
         else:
             continue
-           
-    return processed_docs
+    
+    result = { doc: getTokens(tokens) for doc, tokens in processed_docs.items()}
+    
+
+    return result
+
+
 
 
 def process_query(query: str):
@@ -164,9 +200,70 @@ def process_query(query: str):
     
     return tokens
 
+# All words in system documents
+def getWords(docs: Dict[str, List[Token]]):
+    words = []
+
+    for _, tokens in docs.items():
+        for token in tokens:
+            if token.word  not in words:
+                words.append(token.word)
+    
+    return words
+
+
+
+
+def getDocsVectors(docs: Dict[str, List[Token]], words):
+    vectors: Dict[str, List[number]] = {}
+    
+    for dj, tokens in docs.items():
+        
+        maxfreqij = max(tokens).freq
+        
+        for token in tokens:
+
+            tfij = tf(token.freq, maxfreqij)
+
+
+
+
+
+     
+
+
+def sim(dj: Dict, q: Dict):
+    dotproduct = 0
+    # From the form .. 'term': weight,.. =>  [weigh1, weight2,...]
+    v1 = list(dj.values()) # vector from dj
+    v2 = list(q.values())  # vector from q
+
+    # compute dotproduct from v1 v2
+    for i in  range(len(v1)):
+        dotproduct+=v1[i]+v2[i]
+
+    # |V(d1 )|
+    norm1 = 0
+    for i in v1:
+        norm1 += i*i
+    norm1 = sqrt(norm1)
+
+    # |V(q)|
+
+    norm2 = 0
+    for i in v2:
+        norm2 += i*i
+    norm2 = sqrt(norm2)
+
+    # sim(d1, d2) = V(d1) dot V(d2) /(|V(d1)||V(d2)|)
+    return dotproduct/(norm1*norm2)
 
 
 docs = preprocessing('./test_texts')
+print(docs)
+
+for doc, tokens in docs.items():
+    print(max(tokens))
 # b = freq(a['lordrings.txt'])
 # c = maxfreq(b)
 # d = freqtable(a)
@@ -178,7 +275,7 @@ docs = preprocessing('./test_texts')
 # print(b)
 # print(c)
 # print(d)
-w = weightQuery(process_query("Hello darkness to my friend"), docs)
-print(w)
+# w = weightQuery(process_query("Hello darkness to my friend"), docs)
+# print(w)
 # print(idf)
 # print(n)
