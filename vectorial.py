@@ -1,4 +1,4 @@
-from typing import Dict,List
+from typing import Callable, Dict,List
 from numpy import bool8, number, sqrt
 import spacy
 import os
@@ -33,8 +33,8 @@ nlp =  spacy.load('en_core_web_md')
 # termino de suaviado
 a = 0.5
 
-tf = lambda freqij, maxfreqlj  : freqij/maxfreqlj
-
+tf: Callable[[int, int], float]  = lambda freqij, maxfreqlj  : freqij/maxfreqlj
+idf: Callable[[int, int], float] = lambda N, ni : math.log(N/ni)
 # given a document returns the frequency of occurrence of each term in this
 
 # A document is represented by the name of the document and a list of tokens 
@@ -89,20 +89,22 @@ def querytf(query: List[str]):
 
 
 
-def tftable(documents: Dict[str, List[Token]]):
-    tftable = {}
-    freqt = freqtable(documents)
-
+def tftable(documents: Dict[str, List[Token]], words: List[str]):
+    tftable = {(w,doc): 0  for w in words for doc in documents.keys()}
+    
     for doc, tokens in documents.items():
+        
         for token in tokens:
-            tftable[doc, token] = tf(freqt[doc][token], maxfreq(freqt[doc]))
+            tftable[token.word, doc] = tf(token.freq, max(tokens).freq)
     
     return tftable
 
-def ni_table(documents: Dict[str, List[Token]]):
-    ntable = {}
+def ni_table(documents: Dict[str, List[Token]], words: List['Token']):
+    ntable = { w:0 for w in words }
+    
     for doc, tokens in documents.items():
         visited = []
+        
         for token in tokens:
             
             if token not in visited:
@@ -115,31 +117,18 @@ def ni_table(documents: Dict[str, List[Token]]):
 
     return ntable
 
-def idftable(documents: Dict[str, List[str]]):
-    ntab = ntable(documents)
-    N = len(documents)
-    idftable = {}
+def idftable(documents: Dict[str, List[str]], words: List[str]):
+    N = len(documents.keys())
+    idftable = {w: 0 for w in words}
+    nit = ni_table(documents, words)
+    for w in words:
+        idftable[w] = idf(N, nit[w])
 
-    for doc, tokens in documents.items():
-        for token in tokens:
-            if token not in idftable.keys():
-                idftable[token] = math.log(N/ntab[token])
-    
     return idftable
 
-# tf x idf
-def weightTable(documents: Dict[str, List[str]]):
-    tf = tftable(documents)
-    idf = idftable(documents)
-    wij = {}
-    for doc, tokens in documents.items():
-        for token in tokens:
-            if (doc, token) not in wij.keys():
-                wij[doc, token] = tf[doc, token]*idf[token]
+   
 
-    return wij      
-
-def getTokens(words: List[str]):
+def getTokens(words: List[str]) -> List['Token']:
     tokens: List['Token'] = []
     dic = {}
     
@@ -211,20 +200,43 @@ def getWords(docs: Dict[str, List[Token]]):
     
     return words
 
-
-
-
-def getDocsVectors(docs: Dict[str, List[Token]], words):
-    vectors: Dict[str, List[number]] = {}
+# Para cada termino i la cantidad de documentos  en los que aparece 
+def n_i_table(docs: Dict[str, List[Token]], words):
     
+    n_i_t = {w: 0 for w in words}
+    
+    for w in words:
+        
+        for _, tokens in docs.items():
+
+            for token in tokens:
+                if token.word == w:
+                    n_i_t[w] += 1
+    
+    return n_i_t
+
+
+def getDocsVectors(docs: Dict[str, List[Token]], words: List[str]):
+    vectors: Dict[str, List[number]] = {}
+    N = len(docs.keys())
+    nit = ni_table(docs, words) 
+    tft = tftable(docs, words)
+    term_dic = {word: index for index, word in enumerate(words) }
+    idft = idftable(docs, words)
+
     for dj, tokens in docs.items():
-        
-        maxfreqij = max(tokens).freq
-        
+        vj = len(words)*[0]
+
         for token in tokens:
+            tindex = term_dic[token.word]
+            tfij = tft[token.word, dj]
+            idfi = idft[token.word]
+            wij = tfij*idfi
+            vj[tindex] = wij
+        
+        vectors[dj] = vj
 
-            tfij = tf(token.freq, maxfreqij)
-
+    return vectors
 
 
 
@@ -260,10 +272,9 @@ def sim(dj: Dict, q: Dict):
 
 
 docs = preprocessing('./test_texts')
-print(docs)
+vectors = getDocsVectors(docs, getWords(docs))
 
-for doc, tokens in docs.items():
-    print(max(tokens))
+print(vectors)
 # b = freq(a['lordrings.txt'])
 # c = maxfreq(b)
 # d = freqtable(a)
