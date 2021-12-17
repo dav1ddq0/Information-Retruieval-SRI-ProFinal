@@ -32,7 +32,11 @@ else:
 if st.button("Submit"):
     query = raw_query.title()
     query = process_query(query)
-    w = weightQuery(query, docs)
+    qvector = qVector(query, words, len(docs.keys()), ni_table(docs, words))
+    dvector = getDocsVectors(docs, words)
+    e = getSimilarDocuments(dvector, qvector)
+
+    
    
-    st.success(idf)
-    st.success(w)
+    st.success(e)
+    
