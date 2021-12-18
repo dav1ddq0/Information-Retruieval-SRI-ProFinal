@@ -249,6 +249,7 @@ def getSimilarDocuments(docs, q):
     for doc, vj in docs.items():
         s = sim(vj, q)
         result.append((doc, s))
+
     result.sort(key = lambda x:x[1], reverse=True)
     return result
 
@@ -258,7 +259,7 @@ def sim(v1: List[float], v2: List[float]) -> float:
 
     # compute dotproduct from v1 v2
     for i in range(len(v1)):
-        dotproduct += v1[i]+v2[i]
+        dotproduct += v1[i]*v2[i]
 
     # |V(d1 )|
     norm1 = 0
@@ -279,7 +280,7 @@ def sim(v1: List[float], v2: List[float]) -> float:
 
 docs  = preprocessing('./test_texts')
 words = getWords(docs)
-query = process_query("Hello darkness ")
+query = process_query("Alice in Wonderland")
 qvector = qVector(query, words, len(docs.keys()), ni_table(docs, words))
 dvector = getDocsVectors(docs, words)
 e = getSimilarDocuments(dvector, qvector)
