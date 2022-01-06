@@ -1,59 +1,13 @@
 from enum import Enum
 from typing import Callable, Dict, List, Tuple
 from numpy import bool8, number, sqrt
-import spacy
+
 import os
 import math
-import json
+from model import*
+from tools import*
 
 
-from nltk.stem.snowball import SnowballStemmer
-
-from enum import Enum
-
-
-class DocType(Enum):
-    """TYPES OF DOCUMENTS"""
-    PLAIN_TEXT = 0
-    TXT= 1
-    PDF = 2
-    
-class Doc:
-
-    def __init__(self, name: str, path: str, type: DocType = DocType.PLAIN_TEXT):
-        self.name = name
-        self.path = path
-        self.type = type
-    
-    def __str__(self) -> str:
-        return f"Doc: name -> {self.name} path -> {self.path} type -> {self.type}"
-
-class Token:
-
-    def __init__(self, word: str, freq: int) -> None:
-        self.word = word
-        self.freq = freq
-
-    def __str__(self) -> str:
-        return f"Token(word = {self.word}, freq = {self.freq})"
-
-    def __ge__(self, other: 'Token'):
-        return self.freq >= other.freq
-
-    def __gt__(self, other: 'Token'):
-        return self.freq > other.freq
-
-    def __eq__(self, other: str or 'Token'):
-        if isinstance(other, str):
-            return self.word == other
-        if isinstance(other, 'Token'):
-            return self.word == other.word
-
-
-stemmer = SnowballStemmer(language='english')
-
-
-nlp = spacy.load('en_core_web_md')
 
 # termino de suaviado
 a = 0.5
@@ -178,6 +132,7 @@ def preprocessing(path):
     processed_docs = {}
     text = ''
     doc_files = {}
+    s = os.listdir(path)
     for doc in os.listdir(path):
         full_path = os.path.join(path, doc)
         if os.path.isdir(full_path):
@@ -190,24 +145,17 @@ def preprocessing(path):
             #      doc_files[key] = value
         else:  
             if os.path.splitext(doc)[1] == '.txt':
-                doc_files[doc] =Doc(doc, full_path, DocType.TXT)
+                doc_files[doc] =Doc(doc, full_path, 'TXT')
                 text = open(full_path).read()
-                # procesado del texto (tokenization,stopwords elimination y stemming)
-                tokens = nlp(text)
-                tokens = [
-                    token for token in tokens if not token.is_stop and not token.is_punct and not token.is_space]
-                tokens = [stemmer.stem(token.text) for token in tokens]
+                tokens = text_processed(text)
                 processed_docs[doc] = tokens
             else:
-                doc_files[doc] = Doc(doc, full_path, DocType.PLAIN_TEXT)
+                doc_files[doc] = Doc(doc, full_path,'PLAIN_TEXT')
                 with open(file = full_path, encoding="utf8", errors='ignore') as f:
                     text = f.read()
-                    #procesado del texto (tokenization,stopwords elimination y stemming)
-                    tokens = nlp(text)
-                    tokens = [
-                        token for token in tokens if not token.is_stop and not token.is_punct and not token.is_space]
-                    tokens = [stemmer.stem(token.text) for token in tokens]
+                    tokens = text_processed(text)
                     processed_docs[doc] = tokens
+                    
             
 
     result = {doc: getTokens(tokens) for doc, tokens in processed_docs.items()}
@@ -215,13 +163,10 @@ def preprocessing(path):
     return result, doc_files
 
 
-def process_query(query: str):
-    # procesado del texto (tokenization,stopwords elimination y stemming)
-    tokens = nlp(query)
-    tokens = [
-        token for token in tokens if not token.is_stop and not token.is_punct and not token.is_space]
-    tokens = [stemmer.stem(token.text) for token in tokens]
 
+
+def process_query(query: str):
+    tokens = text_processed(query)
     return getTokens(tokens)
 
 # All words in system documents
@@ -289,7 +234,7 @@ def getSimilarDocuments(docs, q, top: int):
     result.sort(key = lambda x:x[1], reverse=True)
     return result[:top]
 
-
+#
 def sim(v1: List[float], v2: List[float]) -> float:
     dotproduct = 0
 
@@ -317,30 +262,37 @@ def sim(v1: List[float], v2: List[float]) -> float:
 def getDocsFiles(results:List[Tuple[str, float]], docdicc):
     return [docdicc[docname] for (docname, _) in results]     
 
-    
-docs, docdicc  = preprocessing('./test_texts/alt.atheism')
-words = getWords(docs)
 
 
-def save_to_JSON(filename, dicc):
-    with open(f"{filename}.json", "w") as outfile:
-        json.dump(dicc, outfile)
 
-# save_to_JSON('docs', docs)
-
-
-def SearchCoincidences(query: str):
-    procquery = process_query(query)
-    qvector = qVector(procquery, words, len(docs.keys()), ni_table(docs, words))
-    dvector = getDocsVectors(docs, words)
-    e = getSimilarDocuments(dvector, qvector, 10)
-    docsresult = getDocsFiles(e, docdicc)
-    return docsresult
+def init_preprocessed(filename):
+    docs_tokens, docs_info= preprocessing(filename)
+    save_to_JSON('./preprocessed/docsinfo', from_docsl_to_dicc(docs_info))
+    words = getWords(docs_tokens)
+    save_to_JSON('./preprocessed/words', words)
 
 
 
 
-# print(SearchCoincidences("Alice in Wonderland"))
+
+
+init_preprocessed('./test_texts/cran_1400_files')
+
+
+# def SearchCoincidences(query: str):
+#     procquery = process_query(query)
+#     qvector = qVector(procquery, words, len(docs.keys()), ni_table(docs, words))
+#     dvector = getDocsVectors(docs, words)
+#     e = getSimilarDocuments(dvector, qvector, 20)
+#     print(e)
+#     docsresult = getDocsFiles(e, docdicc)
+#     return docsresult
+
+
+
+
+# for doc in SearchCoincidences("what are the structural and aeroelastic problems associated with flight\nof high speed aircraft ."):
+#     print(doc)
 
 # print(z)
 # vectors = getDocsVectors(docs, getWords(docs))

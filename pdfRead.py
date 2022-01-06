@@ -4,7 +4,7 @@ from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 import io
 
-def extract_text_from_pdf(pdf_path):
+def extract_text_from_PDF(pdf_path):
     resource_manager = PDFResourceManager()
     fake_file_handle = io.StringIO()
     converter = TextConverter(resource_manager, fake_file_handle)
