@@ -7,8 +7,8 @@ from PIL import Image
 
 
 type_file_dicc = {
-    DocType.PLAIN_TEXT : "./imgs/text-plane.jpeg",
-    DocType.TXT : "./imgs/txt.jpeg",
+    'PLAIN_TEXT' : "./imgs/text-plane.jpeg",
+    'TXT' : "./imgs/txt.jpeg",
 }   
 
 def buidlColFromDoc(doc: 'Doc'):
@@ -17,6 +17,7 @@ def buidlColFromDoc(doc: 'Doc'):
     with st.container() as container:
         st.header(doc.name)
         st.image(loadImage(type_file_dicc[doc.type]))
+        
         with open(doc.path, "rb") as file:
             st.download_button(
             label="Download",
@@ -24,6 +25,9 @@ def buidlColFromDoc(doc: 'Doc'):
             file_name=doc.name,
             mime = "text/plain_text"
             )
+
+        
+            
 
     return container
         
@@ -45,9 +49,9 @@ if choice == "Home":
         query = raw_query.title()
         st.header("Resultados:\n")
         cols = st.columns(4)
-        # for i,doc in enumerate(SearchCoincidences(query)):
-        #     with cols[i % 4]:
-        #         buidlColFromDoc(doc)
+        for i,doc in enumerate(SearchCoincidences(query)):
+            with cols[i % 4]:
+                buidlColFromDoc(doc)
 
     
     # query = process_query(query)
@@ -65,6 +69,7 @@ elif choice == "View":
     
 elif choice == "Similarity":
     st.subheader("Similarity")
+    
 
 else:
     st.subheader("About")

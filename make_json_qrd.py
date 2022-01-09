@@ -12,11 +12,11 @@ def save(text, number):
         newFile.write(text)
 
 
-def process(query,i):
+def process(query):
     query = query.split('\n.W\n')[1]
     return query
 
-qry = {(i+1):process(query, i+1) for i,query in enumerate(open_cran_qry())}
+qry = [process(query) for query in open_cran_qry()]
 
 
 def open_qrel(filename: str):
@@ -24,8 +24,8 @@ def open_qrel(filename: str):
     with open(filename) as f:
         for line in f.readlines():
             line = line.split() 
-            q = line[0]
-            d = line[1]
+            q = int(line[0])
+            d = int(line[1])
             if q in qrel:
                 qrel[q].append(d)
             else:
@@ -41,7 +41,7 @@ qrel = open_qrel('./test_texts/cran/cranqrel')
 
 
 
-save_to_JSON('./preprocessed/qry', qry)
-save_to_JSON('./preprocessed/qrel', qrel)
+make_pickle_file('./preprocessed/qry', qry)
+make_pickle_file('./preprocessed/qrel', qrel)
 
 

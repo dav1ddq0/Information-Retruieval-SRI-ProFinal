@@ -239,7 +239,7 @@ def getDocsVectors(docs_tokens: List[List[Token]], words: List[str]):
 def getSimilarDocuments(docs, q, top: int):
     result = []
     
-    for doc, vj in docs.items():
+    for doc, vj in enumerate(docs):
         s = sim(vj, q)
         result.append((doc, s))
 
@@ -256,7 +256,7 @@ def sim(v1: List[float], v2: List[float]) -> float:
     #     dotproduct += v1[i]*v2[i]
 
     # |V(d1 )|
-    norm1 = np.linalg(v1)
+    norm1 = np.linalg.norm(v1)
     # norm1 = 0
     # for i in v1:
     #     norm1 += i*i
@@ -264,7 +264,7 @@ def sim(v1: List[float], v2: List[float]) -> float:
 
     # |V(q)|
 
-    norm2 = np.linalg(v2)
+    norm2 = np.linalg.norm(v2)
 
     # for i in v2:
     #     norm2 += i*i
@@ -274,8 +274,8 @@ def sim(v1: List[float], v2: List[float]) -> float:
     return dot/(norm1*norm2)
 
 
-def getDocsFiles(results:List[Tuple[str, float]], docdicc):
-    return    
+def getDocsFiles(results:List[Tuple[int, float]], docdicc):
+    return [docdicc[doc_id] for doc_id, sim in results]   
 
 
 
@@ -284,6 +284,7 @@ def init_preprocessed(filename):
     docs_tokens, docs_info, terms = preprocessing(filename)
     make_pickle_file('./preprocessed/docsinfo', docs_info)
     make_pickle_file('./preprocessed/terms', terms)
+    make_pickle_file('./preprocessed/tokens', docs_tokens)
     
     # save_to_JSON('./preprocessed/words', words)
     vectors = getDocsVectors(docs_tokens,terms)
@@ -302,8 +303,8 @@ if preprocessed_required:
     init_preprocessed('./test_texts/cran_1400_files')
 
 
-vectors  = np.load('./preprocessed/terms.npy')
-print(vectors)
+# vectors  = np.load('./preprocessed/terms.npy')
+# print(vectors)
 # a = unpick_pickle_file('./preprocessed/docsinfo.pickle')
 
 # for key, docfile in a.items():
@@ -313,20 +314,22 @@ print(vectors)
 
 def SearchCoincidences(query: str):
     procquery = process_query(query)
+    docs_info = unpick_pickle_file('./preprocessed/docsinfo.pickle')
     terms = unpick_pickle_file('./preprocessed/terms.pickle')
     doc_vectors = np.load('./preprocessed/vectors.npy')
-    qvector = qVector(procquery, terms, len(doc_vectors), ni_table(terms, terms))
-    dvector = getDocsVectors(docs, words)
-    e = getSimilarDocuments(dvector, qvector, 10)
+    doc_tokens = unpick_pickle_file('./preprocessed/tokens.pickle')
+    qvector = qVector(procquery, terms, len(doc_vectors), ni_table(doc_tokens, terms))
+    
+    e = getSimilarDocuments(doc_vectors, qvector, 50)
     print(e)
-    docsresult = getDocsFiles(e, docdicc)
+    docsresult = getDocsFiles(e, docs_info)
     return docsresult
 
 
 
 
-# for doc in SearchCoincidences("what are the structural and aeroelastic problems associated with flight\nof high speed aircraft ."):
-#     print(doc)
+for doc in SearchCoincidences("what are the structural and aeroelastic problems associated with flight\nof high speed aircraft ."):
+    print(doc)
 
 # print(z)
 # vectors = getDocsVectors(docs, getWords(docs))
