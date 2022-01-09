@@ -2,11 +2,22 @@ import json
 from typing import Dict, List
 import spacy
 from model import*
+import pickle
 
 from nltk.stem.snowball import SnowballStemmer
 
 nlp = spacy.load('en_core_web_md')
 stemmer = SnowballStemmer(language='english')
+
+def make_pickle_file(filename, data):
+    with open(f"{filename}.pickle", "wb") as outfile:
+        pickle.dump(data, outfile)
+
+def unpick_pickle_file(filename):
+    with open(filename, 'rb') as f:
+        data = pickle.load(f)
+    
+    return data
 
 def save_to_JSON(filename, data):
     with open(f"{filename}.json", "w") as outfile:

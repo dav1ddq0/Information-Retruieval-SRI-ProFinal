@@ -1,4 +1,5 @@
 from typing import TextIO
+from numpy import concatenate
 import streamlit as st
 from streamlit.elements.button import DownloadButtonDataType
 from vectorial import *
@@ -13,7 +14,7 @@ type_file_dicc = {
 def buidlColFromDoc(doc: 'Doc'):
     
     
-    with st.container():
+    with st.container() as container:
         st.header(doc.name)
         st.image(loadImage(type_file_dicc[doc.type]))
         with open(doc.path, "rb") as file:
@@ -23,6 +24,8 @@ def buidlColFromDoc(doc: 'Doc'):
             file_name=doc.name,
             mime = "text/plain_text"
             )
+
+    return container
         
 
 
@@ -42,9 +45,9 @@ if choice == "Home":
         query = raw_query.title()
         st.header("Resultados:\n")
         cols = st.columns(4)
-        for i,doc in enumerate(SearchCoincidences(query)):
-            with cols[i % 4]:
-                buidlColFromDoc(doc)
+        # for i,doc in enumerate(SearchCoincidences(query)):
+        #     with cols[i % 4]:
+        #         buidlColFromDoc(doc)
 
     
     # query = process_query(query)

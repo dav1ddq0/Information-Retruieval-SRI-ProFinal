@@ -6,7 +6,7 @@ def articles():
     return articles
 
 def save(text, number):
-    with open(f'./test_texts/cran_1400_files/{number}.txt', 'w') as newFile:
+    with open(f'./test_texts/cran_1400_files/{number}', 'w') as newFile:
         newFile.write(text)
 
 
@@ -18,7 +18,7 @@ def process_article(article,i):
     return article
 
 def cran_to_indepent_file():
-    
+
     path = './test_texts/cran_1400_files'
     
     if os.path.exists(path):

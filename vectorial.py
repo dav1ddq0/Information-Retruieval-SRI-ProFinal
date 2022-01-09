@@ -1,7 +1,8 @@
 from enum import Enum
+from json import load
 from typing import Callable, Dict, List, Tuple
 from numpy import bool8, number, sqrt
-
+import numpy as np
 import os
 import math
 from model import*
@@ -12,8 +13,8 @@ from tools import*
 # termino de suaviado
 a = 0.5
 
-tf: Callable[[int, int], float] = lambda freqij, maxfreqlj: freqij/maxfreqlj
-idf: Callable[[int, int], float] = lambda N, ni: math.log(N/ni)
+tf : Callable[[int, int], float]  = lambda freqij, maxfreqlj: freqij/maxfreqlj
+idf: Callable[[int, int], float]  = lambda N, ni: np.log(N/ni)
 # given a document returns the frequency of occurrence of each term in this
 
 # A document is represented by the name of the document and a list of tokens
@@ -69,29 +70,30 @@ def querytf(query: List[str]):
     return querytf
 
 
-def tftable(documents: Dict[str, List[Token]], words: List[str]):
-    tftable = {(w, doc): 0 for w in words for doc in documents.keys()}
+def tftable(documents: List[List[Token]], words: List[str]):
+    tftable = {(w, dj): 0 for w in words for dj,_ in enumerate(documents)}
 
-    for doc, tokens in documents.items():
+    for dj, tokens in enumerate(documents):
 
         for token in tokens:
-            tftable[token.word, doc] = tf(token.freq, max(tokens).freq)
+            tftable[token.word, dj] = tf(token.freq, max(tokens).freq)
 
     return tftable
 
 
-def ni_table(documents: Dict[str, List[Token]], words: List['Token']):
+def ni_table(documents: List[List[Token]], words: List['Token']):
+    
     ntable = {w: 0 for w in words}
 
-    for doc, tokens in documents.items():
+    for tokens in documents:
         for token in tokens:
             ntable[token.word] += 1
 
     return ntable
 
 
-def idftable(documents: Dict[str, List[str]], words: List[str]):
-    N = len(documents.keys())
+def idf_table(documents: List[List[Token]], words: List[str]):
+    N = len(documents)
     idftable = {w: 0 for w in words}
     nit = ni_table(documents, words)
     for w in words:
@@ -122,17 +124,20 @@ def qVector(q: List[Token], words: List[str], N: int, nitable):
         idfi = idf(N, nitable[word])
         wiq = (a + (1-a)*tfiq)*idfi
         vq[term_dic[word]] = wiq
-    return vq
+    
+    return np.array(vq)
 
 
 
 
 def preprocessing(path):
 
-    processed_docs = {}
-    text = ''
-    doc_files = {}
-    s = os.listdir(path)
+    doc_tokens = []
+    
+    doc_info_files = []
+    terms = []
+
+    
     for doc in os.listdir(path):
         full_path = os.path.join(path, doc)
         if os.path.isdir(full_path):
@@ -145,22 +150,28 @@ def preprocessing(path):
             #      doc_files[key] = value
         else:  
             if os.path.splitext(doc)[1] == '.txt':
-                doc_files[doc] =Doc(doc, full_path, 'TXT')
+                doc_info_files.append(Doc(doc, full_path, 'TXT'))
                 text = open(full_path).read()
                 tokens = text_processed(text)
-                processed_docs[doc] = tokens
+                for t in tokens:
+                    if t not in terms:
+                        terms.append(t)
+                doc_tokens.append(getTokens(tokens))
             else:
-                doc_files[doc] = Doc(doc, full_path,'PLAIN_TEXT')
+                doc_info_files.append(Doc(doc, full_path,'PLAIN_TEXT'))
                 with open(file = full_path, encoding="utf8", errors='ignore') as f:
                     text = f.read()
                     tokens = text_processed(text)
-                    processed_docs[doc] = tokens
+                    for t in tokens:
+                        if t not in terms:
+                            terms.append(t)
+                    doc_tokens.append(getTokens(tokens))
                     
             
 
-    result = {doc: getTokens(tokens) for doc, tokens in processed_docs.items()}
+    
 
-    return result, doc_files
+    return doc_tokens, doc_info_files, terms
 
 
 
@@ -185,42 +196,43 @@ def getWords(docs: Dict[str, List[Token]]):
 # Para cada termino i la cantidad de documentos  en los que aparece
 
 
-def n_i_table(docs: Dict[str, List[Token]], words):
+# def n_i_table(docs: Dict[str, List[Token]], words):
 
-    n_i_t = {w: 0 for w in words}
+#     n_i_t = {w: 0 for w in words}
 
-    for w in words:
+#     for w in words:
 
-        for _, tokens in docs.items():
+#         for _, tokens in docs.items():
 
-            for token in tokens:
-                if token.word == w:
-                    n_i_t[w] += 1
+#             for token in tokens:
+#                 if token.word == w:
+#                     n_i_t[w] += 1
 
-    return n_i_t
+#     return n_i_t
 
 
-def getDocsVectors(docs: Dict[str, List[Token]], words: List[str]):
-    vectors: Dict[str, List[number]] = {}
-    N = len(docs.keys())
-    nit = ni_table(docs, words)
-    tft = tftable(docs, words)
-    term_dic = {word: index for index, word in enumerate(words)}
-    idft = idftable(docs, words)
+def getDocsVectors(docs_tokens: List[List[Token]], words: List[str]):
+    # vectors: Dict[str, List[number]] = {}
+    vectors = []
+    # N = len(docs.keys())
+    # nit = ni_table(docs_tokens, words)
+    tft = tftable(docs_tokens, words)
+    
+    idft = idf_table(docs_tokens, words)
 
-    for dj, tokens in docs.items():
+    for dj, tokens in enumerate(docs_tokens):
         vj = len(words)*[0]
 
-        for token in tokens:
-            tindex = term_dic[token.word]
+        for index, token in enumerate(tokens):
+            
             tfij = tft[token.word, dj]
             idfi = idft[token.word]
             wij = tfij*idfi
-            vj[tindex] = wij
+            vj[index] = wij
 
-        vectors[dj] = vj
+        vectors.append(vj)
 
-    return vectors
+    return np.array(vectors)
 
 
 
@@ -236,57 +248,79 @@ def getSimilarDocuments(docs, q, top: int):
 
 #
 def sim(v1: List[float], v2: List[float]) -> float:
-    dotproduct = 0
+    # dotproduct = 0
 
     # compute dotproduct from v1 v2
-    for i in range(len(v1)):
-        dotproduct += v1[i]*v2[i]
+    dot = np.dot(v1, v2)
+    # for i in range(len(v1)):
+    #     dotproduct += v1[i]*v2[i]
 
     # |V(d1 )|
-    norm1 = 0
-    for i in v1:
-        norm1 += i*i
-    norm1 = sqrt(norm1)
+    norm1 = np.linalg(v1)
+    # norm1 = 0
+    # for i in v1:
+    #     norm1 += i*i
+    # norm1 = sqrt(norm1)
 
     # |V(q)|
 
-    norm2 = 0
-    for i in v2:
-        norm2 += i*i
-    norm2 = sqrt(norm2)
+    norm2 = np.linalg(v2)
+
+    # for i in v2:
+    #     norm2 += i*i
+    # norm2 = sqrt(norm2)
 
     # sim(d1, d2) = V(d1) dot V(d2) /(|V(d1)||V(d2)|)
-    return dotproduct/(norm1*norm2)
+    return dot/(norm1*norm2)
 
 
 def getDocsFiles(results:List[Tuple[str, float]], docdicc):
-    return [docdicc[docname] for (docname, _) in results]     
+    return    
 
 
 
 
 def init_preprocessed(filename):
-    docs_tokens, docs_info= preprocessing(filename)
-    save_to_JSON('./preprocessed/docsinfo', from_docsl_to_dicc(docs_info))
-    words = getWords(docs_tokens)
-    save_to_JSON('./preprocessed/words', words)
+    docs_tokens, docs_info, terms = preprocessing(filename)
+    make_pickle_file('./preprocessed/docsinfo', docs_info)
+    make_pickle_file('./preprocessed/terms', terms)
+    
+    # save_to_JSON('./preprocessed/words', words)
+    vectors = getDocsVectors(docs_tokens,terms)
+    np.save('./preprocessed/vectors', vectors)
+    # make_pickle_file('./preprocessed/vectors', dv)
 
 
 
 
 
 
-init_preprocessed('./test_texts/cran_1400_files')
+
+preprocessed_required = True
+
+if preprocessed_required:
+    init_preprocessed('./test_texts/cran_1400_files')
 
 
-# def SearchCoincidences(query: str):
-#     procquery = process_query(query)
-#     qvector = qVector(procquery, words, len(docs.keys()), ni_table(docs, words))
-#     dvector = getDocsVectors(docs, words)
-#     e = getSimilarDocuments(dvector, qvector, 20)
-#     print(e)
-#     docsresult = getDocsFiles(e, docdicc)
-#     return docsresult
+vectors  = np.load('./preprocessed/terms.npy')
+print(vectors)
+# a = unpick_pickle_file('./preprocessed/docsinfo.pickle')
+
+# for key, docfile in a.items():
+#     print(docfile)
+
+
+
+def SearchCoincidences(query: str):
+    procquery = process_query(query)
+    terms = unpick_pickle_file('./preprocessed/terms.pickle')
+    doc_vectors = np.load('./preprocessed/vectors.npy')
+    qvector = qVector(procquery, terms, len(doc_vectors), ni_table(terms, terms))
+    dvector = getDocsVectors(docs, words)
+    e = getSimilarDocuments(dvector, qvector, 10)
+    print(e)
+    docsresult = getDocsFiles(e, docdicc)
+    return docsresult
 
 
 
