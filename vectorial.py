@@ -11,7 +11,7 @@ from tools import*
 
 
 # termino de suaviado
-a = 0.5
+a = 0
 
 tf : Callable[[int, int], float]  = lambda freqij, maxfreqlj: freqij/maxfreqlj
 idf: Callable[[int, int], float]  = lambda N, ni: np.log(N/ni)

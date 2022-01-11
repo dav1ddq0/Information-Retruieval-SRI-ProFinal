@@ -31,3 +31,9 @@ def recall(qrel_path: str,query, recovered_documents: List):
                   
     
     return recovered_relevant_documents/ len(relevant_documents)
+
+# It is a measure that harmonizes precision and recovery taking both into account.
+def f1 (qrel_path: str, query, recovered_documents: List):
+    p = precision(qrel_path, query, recovered_documents)
+    r = recall(qrel_path, query, recovered_documents)
+    return (2*p*r)/(p+r)
