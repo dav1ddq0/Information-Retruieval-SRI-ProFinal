@@ -3,9 +3,11 @@ from tools import *
 
 # fraction of retrieved documents that are relevant
 def precision(qrel_path: str,query, recovered_documents: List):
-    
+    '''
+        Fraction of retrieved documents that are relevant
+    '''
   
-    qrel = open_JSON(qrel_path)
+    qrel = unpick_pickle_file(qrel_path)
     relevant_documents = qrel[query]
     recovered_relevant_documents = 0
     
@@ -19,9 +21,11 @@ def precision(qrel_path: str,query, recovered_documents: List):
 
 # fraction of relevant documentos that were retrieved
 def recall(qrel_path: str,query, recovered_documents: List):
-    
+    '''
+        Fraction of relevant documentos that were retrieved
+    '''
   
-    qrel = open_JSON(qrel_path)
+    qrel = unpick_pickle_file(qrel_path)
     relevant_documents = qrel[query]
     recovered_relevant_documents = 0
     
@@ -34,6 +38,11 @@ def recall(qrel_path: str,query, recovered_documents: List):
 
 # It is a measure that harmonizes precision and recovery taking both into account.
 def f1 (qrel_path: str, query, recovered_documents: List):
+    '''
+        It is a measure that harmonizes precision and recovery taking both into account.
+    '''
     p = precision(qrel_path, query, recovered_documents)
     r = recall(qrel_path, query, recovered_documents)
     return (2*p*r)/(p+r)
+
+

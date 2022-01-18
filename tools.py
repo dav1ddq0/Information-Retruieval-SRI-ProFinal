@@ -3,6 +3,8 @@ from typing import Dict, List
 import spacy
 from model import*
 import pickle
+import numpy as np
+
 
 from nltk.stem.snowball import SnowballStemmer
 
@@ -26,6 +28,13 @@ def save_to_JSON(filename, data):
 def open_JSON(filename):
     with open(filename) as f:
        data=json.load(f)
+    return data
+
+def save_to_numpy_file(filename, data):
+    np.save(filename, data)
+
+def open_from_numpy_file(filename):
+    data = np.load(filename)
     return data
 
 # text processed (tokenization, remove stopwords and stemming)

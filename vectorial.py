@@ -102,18 +102,6 @@ def idf_table(documents: List[List[Token]], words: List[str]):
     return idftable
 
 
-def getTokens(words: List[str]) -> List['Token']:
-    tokens: List['Token'] = []
-    dic = {}
-
-    for w in words:
-        if w not in dic.keys():
-            dic[w] = words.count(w)
-
-    for w, o in dic.items():
-        tokens.append(Token(word=w, freq=o))
-
-    return tokens
 
 
 def qVector(q: List[Token], words: List[str], N: int, nitable):
@@ -130,68 +118,15 @@ def qVector(q: List[Token], words: List[str], N: int, nitable):
 
 
 
-def preprocessing(path):
-
-    doc_tokens = []
-    
-    doc_info_files = []
-    terms = []
-
-    
-    for doc in os.listdir(path):
-        full_path = os.path.join(path, doc)
-        if os.path.isdir(full_path):
-            continue
-            # tpd, tdocd = preprocessing(full_path)
-            # for key,value in tpd.items():
-            #      processed_docs[key] = value
-
-            # for key,value in tdocd.items():
-            #      doc_files[key] = value
-        else:  
-            if os.path.splitext(doc)[1] == '.txt':
-                doc_info_files.append(Doc(doc, full_path, 'TXT'))
-                text = open(full_path).read()
-                tokens = text_processed(text)
-                for t in tokens:
-                    if t not in terms:
-                        terms.append(t)
-                doc_tokens.append(getTokens(tokens))
-            else:
-                doc_info_files.append(Doc(doc, full_path,'PLAIN_TEXT'))
-                with open(file = full_path, encoding="utf8", errors='ignore') as f:
-                    text = f.read()
-                    tokens = text_processed(text)
-                    for t in tokens:
-                        if t not in terms:
-                            terms.append(t)
-                    doc_tokens.append(getTokens(tokens))
-                    
-            
-
-    
-
-    return doc_tokens, doc_info_files, terms
 
 
 
 
-def process_query(query: str):
-    tokens = text_processed(query)
-    return getTokens(tokens)
 
 # All words in system documents
 
 
-def getWords(docs: Dict[str, List[Token]]):
-    words = []
 
-    for _, tokens in docs.items():
-        for token in tokens:
-            if token.word not in words:
-                words.append(token.word)
-
-    return words
 
 # Para cada termino i la cantidad de documentos  en los que aparece
 
@@ -236,7 +171,7 @@ def getDocsVectors(docs_tokens: List[List[Token]], words: List[str]):
 
 
 
-def getSimilarDocuments(docs, q, top: int):
+def getSimilarDocuments(docs, q):
     result = []
     
     for doc, vj in enumerate(docs):
@@ -244,7 +179,7 @@ def getSimilarDocuments(docs, q, top: int):
         result.append((doc, s))
 
     result.sort(key = lambda x:x[1], reverse=True)
-    return result[:top]
+    return result
 
 #
 def sim(v1: List[float], v2: List[float]) -> float:
@@ -280,27 +215,15 @@ def getDocsFiles(results:List[Tuple[int, float]], docdicc):
 
 
 
-def init_preprocessed(filename):
-    docs_tokens, docs_info, terms = preprocessing(filename)
-    make_pickle_file('./preprocessed/docsinfo', docs_info)
-    make_pickle_file('./preprocessed/terms', terms)
-    make_pickle_file('./preprocessed/tokens', docs_tokens)
-    
-    # save_to_JSON('./preprocessed/words', words)
-    vectors = getDocsVectors(docs_tokens,terms)
-    np.save('./preprocessed/vectors', vectors)
-    # make_pickle_file('./preprocessed/vectors', dv)
 
 
 
 
 
+# preprocessed_required = True
 
-
-preprocessed_required = True
-
-if preprocessed_required:
-    init_preprocessed('./test_texts/cran_1400_files')
+# if preprocessed_required:
+#     init_preprocessed('./test_texts/cran_1400_files')
 
 
 # vectors  = np.load('./preprocessed/terms.npy')
@@ -312,18 +235,18 @@ if preprocessed_required:
 
 
 
-def SearchCoincidences(query: str):
-    procquery = process_query(query)
-    docs_info = unpick_pickle_file('./preprocessed/docsinfo.pickle')
-    terms = unpick_pickle_file('./preprocessed/terms.pickle')
-    doc_vectors = np.load('./preprocessed/vectors.npy')
-    doc_tokens = unpick_pickle_file('./preprocessed/tokens.pickle')
-    qvector = qVector(procquery, terms, len(doc_vectors), ni_table(doc_tokens, terms))
+# def SearchCoincidences(query: str):
+#     procquery = process_query(query)
+#     docs_info = unpick_pickle_file('./preprocessed/docsinfo.pickle')
+#     terms = unpick_pickle_file('./preprocessed/terms.pickle')
+#     doc_vectors = np.load('./preprocessed/vectors.npy')
+#     doc_tokens = unpick_pickle_file('./preprocessed/tokens.pickle')
+#     qvector = qVector(procquery, terms, len(doc_vectors), ni_table(doc_tokens, terms))
     
-    e = getSimilarDocuments(doc_vectors, qvector, 50)
-    print(e)
-    docsresult = getDocsFiles(e, docs_info)
-    return docsresult
+#     e = getSimilarDocuments(doc_vectors, qvector, 50)
+#     print(e)
+#     docsresult = getDocsFiles(e, docs_info)
+#     return docsresult
 
 
 

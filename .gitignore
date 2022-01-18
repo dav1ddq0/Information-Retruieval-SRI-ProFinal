@@ -130,6 +130,8 @@ dmypy.json
 
 # test cases
 
-test_texts/
+system_docs/
 
 preprocessed/
+
+test_documents/
