@@ -4,7 +4,7 @@ import spacy
 from model import*
 import pickle
 import numpy as np
-
+from PIL import Image
 
 from nltk.stem.snowball import SnowballStemmer
 
@@ -37,6 +37,14 @@ def open_from_numpy_file(filename):
     data = np.load(filename)
     return data
 
+
+def load_image(path: str):
+    '''
+    
+    '''
+    img = Image.open(path)
+    return img
+    
 # text processed (tokenization, remove stopwords and stemming)
 def text_processed(text: str):
     tokens = nlp(text)

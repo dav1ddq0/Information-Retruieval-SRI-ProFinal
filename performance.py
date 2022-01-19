@@ -2,17 +2,17 @@ from typing import List
 from tools import *
 
 # fraction of retrieved documents that are relevant
-def precision(qrel_path: str,query, recovered_documents: List):
+def precision(relevant_documents: List[str], recovered_documents: List[Doc]):
     '''
         Fraction of retrieved documents that are relevant
     '''
   
-    qrel = unpick_pickle_file(qrel_path)
-    relevant_documents = qrel[query]
+    # qrel = unpick_pickle_file(qrel_path)
+    # relevant_documents = qrel[query]
     recovered_relevant_documents = 0
     
     for doc in recovered_documents:
-        if doc  in relevant_documents:
+        if doc.name  in relevant_documents:
             recovered_relevant_documents +=1
                   
     

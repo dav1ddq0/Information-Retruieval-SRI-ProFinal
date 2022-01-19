@@ -1,16 +1,22 @@
 from doc_preprocessed import *
-from tools import open_from_numpy_file, unpick_pickle_file
+from tools import *
 import numpy as np
 from vectorial import *
 
 
 class Retrieval_handler:
 
-    def __init__(self, *, preprocess_required = False):
+    def __init__(self, *, preprocess_required = False, 
+        load_test_qrel_qry = False):
+
         self.preprocess_required = preprocess_required
         
         if preprocess_required:
             init_preprocessed('./system_docs')
+        
+        if load_test_qrel_qry:
+            self.qrel = open_JSON('./preprocessed/qrel.json')
+            self.qry  = open_JSON('./preprocessed/qry.json')
         
         self.terms = unpick_pickle_file('./preprocessed/terms.pickle')
         self.docs_info = unpick_pickle_file('./preprocessed/docsinfo.pickle')
@@ -18,7 +24,7 @@ class Retrieval_handler:
         self.docs_tokens = unpick_pickle_file('./preprocessed/tokens.pickle')
         
     
-    def SearchCoincidences(self, query: str, top: int):
+    def search_coincidences(self, query: str, top: int):
         procquery = process_query(query)
         
         qvector = qVector(procquery, self.terms, len(self.docs_vectors), ni_table(self.docs_tokens, self.terms))

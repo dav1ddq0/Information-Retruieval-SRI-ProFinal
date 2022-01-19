@@ -34,9 +34,7 @@ def buidlColFromDoc(doc: 'Doc'):
 
 
 st.title("Document Information Retrieval")
-def loadImage(path: str):
-    img = Image.open(path)
-    return img
+
 
 raw_query = st.text_area("Write what you want to search", "Type here...")
 menu = ["Home", "View", "Similarity", "About"]

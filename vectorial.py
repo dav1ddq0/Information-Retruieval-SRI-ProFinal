@@ -251,8 +251,8 @@ def getDocsFiles(results:List[Tuple[int, float]], docdicc):
 
 
 
-for doc in SearchCoincidences("what are the structural and aeroelastic problems associated with flight\nof high speed aircraft ."):
-    print(doc)
+# for doc in SearchCoincidences("what are the structural and aeroelastic problems associated with flight\nof high speed aircraft ."):
+#     print(doc)
 
 # print(z)
 # vectors = getDocsVectors(docs, getWords(docs))
