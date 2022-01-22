@@ -11,7 +11,7 @@ from tools import*
 
 
 # termino de suaviado
-a = 0
+a = 0.4
 
 tf : Callable[[int, int], float]  = lambda freqij, maxfreqlj: freqij/maxfreqlj
 idf: Callable[[int, int], float]  = lambda N, ni: np.log(N/ni)
@@ -179,10 +179,24 @@ def getSimilarDocuments(docs, q):
         result.append((doc, s))
 
     result.sort(key = lambda x:x[1], reverse=True)
+    print(max(result, key = lambda x:x[1]))
     return result
 
 #
 def sim(v1: List[float], v2: List[float]) -> float:
+    '''
+        Computes the similarity between two vectors v1,v2
+        
+        Parameters
+        ----------
+        v1 : List[float]
+        represents the vector v1
+
+        v2 : List[float]
+        represents the vector v2
+        
+        `sim(v1, v2) = v1 dot v2 /(|v1||v2|)`
+    '''
     # dotproduct = 0
 
     # compute dotproduct from v1 v2
@@ -204,7 +218,8 @@ def sim(v1: List[float], v2: List[float]) -> float:
     # for i in v2:
     #     norm2 += i*i
     # norm2 = sqrt(norm2)
-
+    if norm1 or norm2 == 0:
+        return 0
     # sim(d1, d2) = V(d1) dot V(d2) /(|V(d1)||V(d2)|)
     return dot/(norm1*norm2)
 

@@ -1,7 +1,7 @@
 from doc_preprocessed import *
 from tools import *
 import numpy as np
-from vectorial import *
+from vectorial_model import *
 
 
 class Retrieval_handler:
@@ -32,5 +32,5 @@ class Retrieval_handler:
         search_results = getSimilarDocuments(self.docs_vectors, qvector)[:top]
         
         docsresult = getDocsFiles(search_results, self.docs_info)
-        return docsresult
+        return docsresult,[i for _,i in search_results]
 

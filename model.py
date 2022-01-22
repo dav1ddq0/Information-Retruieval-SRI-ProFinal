@@ -1,5 +1,5 @@
 from enum import Enum
-
+from text_preprocessing import *
 
 class DocType(Enum):
     """TYPES OF DOCUMENTS"""
@@ -9,10 +9,11 @@ class DocType(Enum):
     
 class Doc:
 
-    def __init__(self, name: str, path: str, type: DocType = str):
+    def __init__(self, name: str, path: str, type: str, text= str):
         self.name = name
         self.path = path
         self.type = type
+        self.terms = filter_and_tokenize_text(text)
     
     def __str__(self) -> str:
         return f"Doc: name -> {self.name} path -> {self.path} type -> {self.type}"

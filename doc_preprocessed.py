@@ -2,7 +2,7 @@ import os
 from typing import Dict, List
 from model import*
 from tools import*
-from vectorial import*
+from vectorial_model import*
 
 def getTokens(words: List[str]) -> List['Token']:
     '''

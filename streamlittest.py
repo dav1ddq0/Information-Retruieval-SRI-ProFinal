@@ -2,7 +2,7 @@ from typing import TextIO
 from numpy import concatenate
 import streamlit as st
 from streamlit.elements.button import DownloadButtonDataType
-from vectorial import *
+from vectorial_model import *
 from PIL import Image
 
 
