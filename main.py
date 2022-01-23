@@ -1,6 +1,6 @@
 from Retrieval_handler import Retrieval_handler
-import pdfRead
 from UI_streamlit import*
+from cran_process import make_cran_to_indepent_file
 # from cran_process import*
 from performance import*
 from system_docs_processing import*
@@ -9,12 +9,13 @@ from vectorial_model import*
 from fuzzy_model import Fuzzy
 
 def main():
-    handler =  Retrieval_handler(system_docs_preprocess_required=False,
-     model_preprocess_required=False, retrieval_model_used='vectorial')
+    make_cran_to_indepent_file()
+    handler =  Retrieval_handler(system_docs_preprocess_required=True,
+     model_preprocess_required=True, retrieval_model_used='vectorial')
     # model = handler.model
     print('\o/')
     # search = handler.search('bag four models speed aircraft')
-    ui =  UIStremlit(handler)
+    # UIStremlit(handler)
     # make_cran_query_qrel_files()
     # preprocess = text_preprocessing(text= "There are 3 balls in this 4 bag, and 12 in the other one.",
     # lowercase = True,

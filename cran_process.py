@@ -23,8 +23,7 @@ def make_cran_to_indepent_file():
     path = './system_docs'
     
     if os.path.exists(path):
-        for f in os.listdir(path):
-            os.remove(os.path.join(path, f))
+        remove_all_from_a_path(path)
     else:
         os.mkdir(path)
     

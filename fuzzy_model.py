@@ -91,7 +91,7 @@ class Fuzzy:
     
      # obtener los resultados de búsqueda con los términos que estableció el usuario
     def get_search_results(self,*, query: str,
-        filters: List[str],
+        filters: List[str] = ['PDF', 'TXT', 'PLAIN TEXT'],
         top10: bool = False):
         tokens = filter_and_tokenize_text(query)
         tokens = remove_terms_not_appear(tokens, self.corpus_terms) # quito los términos de la query que no me interesan porque no aparece en los términos del corpus

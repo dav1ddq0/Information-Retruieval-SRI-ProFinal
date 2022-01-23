@@ -124,3 +124,11 @@ def get_text_from_upload_file(input_file):
     btext = input_file.read()
     text = btext.decode('utf-8') # si no está en utf-8 \o/
     return text
+
+def remove_all_from_a_path(path: str):
+    for f in os.listdir(path):
+        full_path = os.path.join(path, f)
+        if os.path.isdir(full_path):
+            remove_all_from_a_path(full_path)
+        else:
+            os.remove(full_path)

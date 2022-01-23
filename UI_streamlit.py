@@ -52,12 +52,14 @@ class UIStremlit:
     def docs_results_component(self, query, filters: List[str], top10: bool = False):
         docs_founds = self.handler.search(query, filters, top10)
         if docs_founds:
+            # st.success("Se encontraron resultados")
             st.markdown("**Resultados de la búsqueda:**")
             results_components = st.columns(6)
             for i,doc in enumerate(docs_founds):
                 with results_components[i % 6]:
                     self._buidl_container_from_doc(doc)
         else:
+            # st.error('')
             st.markdown("**No se encontraron resultados 😥**")
 
     
@@ -87,6 +89,7 @@ class UIStremlit:
             uploaded_file  =  st.file_uploader("Upload Document", type=["pdf", "txt"])
             if uploaded_file:
                 file_type = uploaded_file.name.split('.')[1]
+                
                 if file_type == 'pdf':
                     query =  get_pdf_from_upload_file(uploaded_file)
                 else:
