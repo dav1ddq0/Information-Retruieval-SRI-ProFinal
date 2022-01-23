@@ -38,4 +38,5 @@ class Token:
             return self.word == other
         if isinstance(other, 'Token'):
             return self.word == other.word
+    
 
