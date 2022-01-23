@@ -1,36 +1,37 @@
-from doc_preprocessed import *
 from tools import *
-import numpy as np
-from vectorial_model import *
-
-
+from vectorial_model import Vectorial
+from system_docs_processing import*
+from fuzzy_model import Fuzzy
 class Retrieval_handler:
 
-    def __init__(self, *, preprocess_required = False, 
-        load_test_qrel_qry = False):
+    def __init__(self, *, system_docs_preprocess_required = False,
+        model_preprocess_required = False, 
+        retrieval_model_used: str ='vectorial'):
 
-        self.preprocess_required = preprocess_required
         
-        if preprocess_required:
-            init_preprocessed('./system_docs')
         
-        if load_test_qrel_qry:
-            self.qrel = open_JSON('./preprocessed/qrel.json')
-            self.qry  = open_JSON('./preprocessed/qry.json')
-        
-        self.terms = unpick_pickle_file('./preprocessed/terms.pickle')
-        self.docs_info = unpick_pickle_file('./preprocessed/docsinfo.pickle')
-        self.docs_vectors = open_from_numpy_file('./preprocessed/vectors.npy')
-        self.docs_tokens = unpick_pickle_file('./preprocessed/tokens.pickle')
-        
+        if system_docs_preprocess_required:
+            self.compute_and_save_corpus_data()
+        else:
+            self.corpus_terms = unpick_pickle_file('./preprocessed/terms.pickle')
+            self.documents = unpick_pickle_file('./preprocessed/documents.pickle')
+        if retrieval_model_used == 'vectorial':
+            self.model: Vectorial = Vectorial(self.corpus_terms, self.documents, model_preprocess_required)
+        if retrieval_model_used == 'fuzzy':
+            self.model: Fuzzy = Fuzzy(self.corpus_terms, self.documents, model_preprocess_required)
+
+    def compute_and_save_corpus_data(self, docs_path: str = './system_docs'):
+        docs = libdocuments_processing(docs_path)
+        terms = get_terms(docs) 
+        make_pickle_file('./preprocessed/terms', terms)
+        make_pickle_file('./preprocessed/documents', docs)
+        self.corpus_terms = terms
+        self.documents = docs
     
-    def search_coincidences(self, query: str, top: int):
-        procquery = process_query(query)
-        
-        qvector = qVector(procquery, self.terms, len(self.docs_vectors), ni_table(self.docs_tokens, self.terms))
+    def search(self, query: str, filters: List[str], top10: bool= False):  
+        return self.model.get_search_results(query = query, filters = filters, top10 = top10)
 
-        search_results = getSimilarDocuments(self.docs_vectors, qvector)[:top]
+    def eval_model(corpus='cran', model= 'vectorial'):
+        if corpus == 'cran':
+            pass
         
-        docsresult = getDocsFiles(search_results, self.docs_info)
-        return docsresult,[i for _,i in search_results]
-

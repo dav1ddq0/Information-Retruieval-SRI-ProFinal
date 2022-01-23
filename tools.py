@@ -103,3 +103,24 @@ def text_processed(text: str):
 def from_docsl_to_dicc(docs: Dict[str, Doc]):
     return { doc: (docs[doc].path, docs[doc].type)  for doc in docs}
 
+def get_pdf_from_upload_file(file):
+    
+    
+    resource_manager = PDFResourceManager()
+    fake_file_handle = io.StringIO()
+    converter = TextConverter(resource_manager, fake_file_handle)
+    page_interpreter = PDFPageInterpreter(resource_manager, converter)
+    
+    for page in PDFPage.get_pages(file, caching=True,check_extractable=True):
+        page_interpreter.process_page(page)
+    text = fake_file_handle.getvalue()
+    # close open handles
+    converter.close()
+    fake_file_handle.close()
+    if text:
+        return text
+
+def get_text_from_upload_file(input_file):
+    btext = input_file.read()
+    text = btext.decode('utf-8') # si no está en utf-8 \o/
+    return text

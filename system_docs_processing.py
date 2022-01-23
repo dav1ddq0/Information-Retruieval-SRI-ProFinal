@@ -42,8 +42,3 @@ def get_terms(docs: List[Doc]): # genera el vocabulario con todas las palabras q
     
     return terms
 
-def compute_and_save_corpus_data(docs_path: str = './system_docs'):
-    docs = libdocuments_processing(docs_path)
-    terms = get_terms(docs) 
-    make_pickle_file('./preprocessed/terms', terms)
-    make_pickle_file('./preprocessed/documents', docs)

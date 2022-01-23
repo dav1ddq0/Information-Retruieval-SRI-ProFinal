@@ -1,14 +1,20 @@
 from Retrieval_handler import Retrieval_handler
 import pdfRead
-# from UI_streamlit import*
+from UI_streamlit import*
 # from cran_process import*
 from performance import*
 from system_docs_processing import*
 # from text_preprocessing import*
-from dummy_vectorial_model import*
-# from fuzzy_model import*
+from vectorial_model import*
+from fuzzy_model import Fuzzy
 
 def main():
+    handler =  Retrieval_handler(system_docs_preprocess_required=False,
+     model_preprocess_required=False, retrieval_model_used='vectorial')
+    # model = handler.model
+    print('\o/')
+    # search = handler.search('bag four models speed aircraft')
+    ui =  UIStremlit(handler)
     # make_cran_query_qrel_files()
     # preprocess = text_preprocessing(text= "There are 3 balls in this 4 bag, and 12 in the other one.",
     # lowercase = True,
@@ -40,8 +46,8 @@ def main():
     max_precision = 0
     max_sim = 0
     precision_promedio = 0
-    d  =get_search_results(query = 'what similarity laws must be obeyed when constructing aeroelastic models\nof heated high speed aircraft')
-    print('\o/')
+    # d  =get_search_results(query = 'what similarity laws must be obeyed when constructing aeroelastic models\nof heated high speed aircraft')
+    # print('\o/')
     # q1 = qrys[0]
     # d_vectors, idf = compute_weight()
     # results = get_search_results(q1, d_vectors, idf)
